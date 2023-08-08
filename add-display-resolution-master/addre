@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# add desktop resolution 1920x1080
+# usage:
+# ./addre 1920x1080
+
+case $1 in
+  "3840x2160"|"2160")
+    _cvt="3840 2160 60"
+  ;;
+  "3200x1800"|"1800")
+    _cvt="3200 1800 60"
+  ;;
+  "2048x1536"|"1536")
+    _cvt="2048 1536 60"
+  ;;
+  "2048x1152"|"1152")
+    _cvt="2048 1152 60"
+  ;;
+  "1856x1392"|"1392")
+    _cvt="1856 1392 60"
+  ;;
+  "1920x1080"|"1080")
+    _cvt="1920 1080 60"
+  ;;
+  "1600x900"|"900")
+    _cvt="1600 900 60"
+  ;;
+  "1280x720"|"720")
+    _cvt="1280 720 60"
+  ;;
+# add any resolution
+  *"x"*)
+  for i in "$1"; do
+    _cvt_h=$(echo $i | sed 's/x.*//')
+    _cvt_v="${i#*x}"
+    echo "_cvt_h="$_cvt_h
+    echo "_cvt_v="$_cvt_v
+    _cvt=$_cvt_h" "$_cvt_v" 60"
+    echo "_cvt="$_cvt
+  done
+  ;;
+  *)
+    echo -e "\e[31m wrong resolution...\e[0m"
+    echo -e "exit 0"
+    exit 0
+  ;;
+esac
+
+res=$(cvt $_cvt | sed 's/^.*MHz//' | sed 's/\/.*//' | sed 's/^.*Modeline//' | sed 's/\"//g')
+name=$(echo $res | sed 's/\_.*//')
+res=$(echo $res | sed 's/^.*60.00 //')
+res="$name $res"
+echo -e "\e[36m res=\e[33m$res \e[0m"
+echo -e "\e[36m ================ xrandr --newmode $res =================\e[0m"
+xrandr --newmode $res
+
+if [ $USER = "root" ]; then
+  disp=$(xrandr -q | grep " connected" | cut -d " " -f 1)
+  echo -e "\e[36m ================ xrandr --addmode $disp $name =================\e[0m"
+  xrandr --addmode $disp $name
+else
+  disp=$(sudo xrandr -q | grep " connected" | cut -d " " -f 1)
+  echo -e "\e[36m ================ xrandr --addmode $disp $name =================\e[0m"
+  sudo xrandr --addmode $disp $name
+fi
+echo -e "\e[36m disp=\e[33m$disp \e[0m"
+echo -e "\e[36m ================ xrandr --output $disp --mode $name =================\e[0m"
+xrandr --output $disp --mode $name
+echo -e "\e[36m ================ xrandr -s $name =================\e[0m"
+export DISPLAY=:0 && xrandr -s $name
+echo -e "\e[36m ================ xrandr -q =================\e[0m"
+xrandr -q
