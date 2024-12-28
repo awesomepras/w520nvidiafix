@@ -27,3 +27,20 @@ github.com/porczynski/add-display-resolution
 ##### Ref:
 https://askubuntu.com/questions/1193045/wrong-resolution-missing-1920x1080-on-lenovo-w520-after-update-to-ubuntu-18-04
 https://ubuntu.com/server/docs/nvidia-drivers-installation
+
+
+####  After update to ubuntu 24.04 (noble) the kernel header is incompatible with 390 version driver
+Remove everything
+```
+sudo apt-get remove --purge '^nvidia-.*'; sudo apt-get autoremove --purge
+sudo rm -rf /etc/X11/xorg.conf.d/10-nvidia.conf
+sudo rm -rf /var/lib/dkms/nvidia
+sudo rm -rf /usr/share/X11/xorg.conf.d/10-nvidia.conf
+```
+Rebuild the kernel header
+```
+sudo apt install --reinstall linux-headers-$(uname -r)
+```
+OPtionally you can try and run the driver file from following URL but it fails at running the modules
+wget https://download.nvidia.com/XFree86/Linux-x86_64/390.157/NVIDIA-Linux-x86_64-390.157.run
+Dont forget to reboot
